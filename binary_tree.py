@@ -2,41 +2,102 @@
 # -*- coding: utf-8 -*- 
 
 import sys
+import random
+import copy
 
-# A binary tree
-class ParamRange:
-    param = None 
-    min_value = 0 
-    max_value = sys.maxint 
-
+''' Data connected with every node
+TODO: change maxint/minint to valid max/min value taken from datasource file'''
 class NodeData:
     param = None
     value = 0
-    ranges = []
+    ranges = None
 
     def __init__(self, param_no):
+        self.ranges = [] 
         for i in range(param_no):
-            self.ranges.append(ParamRange())
+            self.ranges.append({'minValue': -sys.maxint - 1, 'maxValue': sys.maxint})
             
-
+''' Node of a tree '''    
 class Node:
-    left, right = None, None
-    data = 0
+    left, right, parent, data = None, None, None, None
 
     def __init__(self, data):
         self.left = None
         self.right = None
+        self.parent = None
         self.data = data
 
+''' A binary tree '''
 class BinaryTree:
-    def __init__(self):
-        self.root = None
+    
+    ''' Constructs empty binary tree 
+    @param param_no number of parameters in the datasource '''
+    def __init__(self, param_no):
+        self.root = Node(None)
+        self.root.parent = None
+        self.leaves = [self.root]
+        self.param_no = param_no
 
+    ''' Inserts random node choosing random parameter with a random range '''
+    def insertRandom(self):
+        # leaf chosen to turn into a node
+        xNode = self.leaves[random.randint(0, len(self.leaves) - 1)]
+        
+        xNodeData = NodeData(self.param_no)
+        # copying ranges list from the parent if it's not root
+        if xNode.parent:
+            xNodeData.ranges = copy.deepcopy(xNode.parent.data.ranges)
+            xNode.data = xNodeData
+            # ranges list is updated basing on the parent parameter value
+            self.updateRanges(xNode)
+        else:
+            xNode.data = xNodeData
+        
+        # parameter chosen to be changed
+        randParam = random.randint(0, self.param_no - 1)
+        # value of the chosen parameter
+        randValue = random.uniform(
+                                   xNode.data.ranges[randParam]['minValue'], 
+                                   xNode.data.ranges[randParam]['maxValue'])
+            
+        # filling node data for a new node
+        xNodeData.param = randParam
+        xNodeData.value = randValue
+
+        # creating new leaves
+        xNode.left = Node(None)
+        xNode.right = Node(None)
+        xNode.left.parent = xNode
+        xNode.right.parent = xNode
+        self.leaves.append(xNode.left)
+        self.leaves.append(xNode.right)
+        # xNode is not a leaf anymore
+        self.leaves.remove(xNode)
+
+    ''' Updates ranges list of a node basing on its parent 
+    @param node must not be None! '''
+    def updateRanges(self, node):
+        
+        parentNode = node.parent
+        parentValue = parentNode.data.value
+        parentParam = parentNode.data.param
+        ranges = node.data.ranges
+        
+        # check if node is left or right son
+        if node == parentNode.left:
+            ranges[parentParam]['maxValue'] = parentValue
+        else:
+            ranges[parentParam]['minValue'] = parentValue
+        
+    '''Co to ma robic? :D
+    @deprecated'''
     def addNode(self, data):
         # creates a new node and returns it
         return Node(data)
 
-    def insert(self, root, data):
+    ''' @note Rekurencyjne wstawianie nie ma zastosowania
+    @deprecated'''
+    def insert_deprecated(self, root, data):
         if root == None:
             # if there is no data, add the new one
             return self.addNode(data)
@@ -44,12 +105,13 @@ class BinaryTree:
             # find a place to insert
             if data <= root.data:
                 # go to left sub-tree
-                root.left = self.insert(root.left, data)
+                root.left = self.insert_deprecated(root.left, data)
             else:
                 # go to right sub-tree
-                root.right = self.insert(root.right, data)
+                root.right = self.insert_deprecated(root.right, data)
             return root
 
+    ''' @note Chyba nie bedzie miec zastosowania '''
     def isInserted(self, root, data_to_find):
         # check if data is inserted into a tree
         if root == None:
@@ -66,6 +128,8 @@ class BinaryTree:
                     # right sub-tree
                     return self.isInserted(root.right, data_to_find)
 
+    ''' data jest klasa, wiec tak naprawde nie wiem, co mogloby to zwracac 
+    @deprecated '''
     def minValue(self, root):
         while(root.left != None):
             root = root.left
@@ -85,6 +149,7 @@ class BinaryTree:
         else:
             return self.size(root.left) + 1 + self.size(root.right)
 
+    ''' TODO: how to print NodeData ? '''
     def printTree(self, root):
         if root == None:
             pass
@@ -95,19 +160,26 @@ class BinaryTree:
 
 
 if __name__ == "__main__":
-    p = ParamRange()
-    n = NodeData(9)
-    print "max value"
-    print n.ranges[1].max_value
 
+    # binary tree working on 3 parameters
+    # makes 4 nodes + 5 leaves
+    print "binary tree"
+    newTree = BinaryTree(3)
+    newTree.insertRandom()
+    newTree.insertRandom()
+    newTree.insertRandom()
+    newTree.insertRandom()
 
+    '''
     tree = BinaryTree()
     root = tree.addNode(3)
     for i in range(1, 5):
-        tree.insert(root, i)
+        tree.insert_deprecated(root, i)
 
     print "Binary tree: "
     tree.printTree(root)
     print
     print "Depth: ", tree.maxDepth(root)
     print "Size: ", tree.size(root)
+    '''
+    
