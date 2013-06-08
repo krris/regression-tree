@@ -1,7 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
 
+import sys
+
 # A binary tree
+class ParamRange:
+    param = None 
+    min_value = 0 
+    max_value = sys.maxint 
+
+class NodeData:
+    param = None
+    value = 0
+    ranges = []
+
+    def __init__(self, param_no):
+        for i in range(param_no):
+            self.ranges.append(ParamRange())
+            
 
 class Node:
     left, right = None, None
@@ -79,6 +95,12 @@ class BinaryTree:
 
 
 if __name__ == "__main__":
+    p = ParamRange()
+    n = NodeData(9)
+    print "max value"
+    print n.ranges[1].max_value
+
+
     tree = BinaryTree()
     root = tree.addNode(3)
     for i in range(1, 5):
