@@ -1,21 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
 
-import sys
 import random
 import copy
 import pydot
 
-''' Data connected with every node
-TODO: change maxint/minint to valid max/min value taken from datasource file'''
+import csv_loader
+
+''' Data connected with every node'''
 class NodeData:
     param = None
     value = 0
     
-    def __init__(self, parameters):
-        self.ranges = {}
-        for p in parameters:
-            self.ranges[p] = {'minValue': -sys.maxint - 1, 'maxValue': sys.maxint}
+    ''' @param min_max_param_values: dictionary of minValue and maxValue of
+        every parameter'''
+    def __init__(self, parameters, min_max_param_values):
+        self.ranges = copy.deepcopy(min_max_param_values)
             
 ''' Node of a tree '''    
 class Node:
@@ -31,20 +31,25 @@ class Node:
 ''' A binary tree '''
 class BinaryTree:
     
-    ''' Constructs empty binary tree 
-    @parameters A list of available parameters from the datasource '''
-    def __init__(self, parameters):
+    ''' Constructs empty binary tree '''
+    def __init__(self, csv_data):
         self.root = Node(None)
         self.root.parent = None
         self.leaves = [self.root]
-        self.parameters = parameters
+        
+        # A list of available parameters from the datasource
+        self.parameters = csv_data[0].keys()
+        self.csv_data = csv_data
+        
+        # Get min and max values of each parameter
+        self.minMaxParamValues = self.getMinMaxParameterValue(self.csv_data)
 
     ''' Inserts random node choosing random parameter with a random range '''
     def insertRandom(self):
         # leaf chosen to turn into a node
         xNode = self.leaves[random.randint(0, len(self.leaves) - 1)]
         
-        xNodeData = NodeData(self.parameters)
+        xNodeData = NodeData(self.parameters, self.minMaxParamValues)
         # copying ranges list from the parent if it's not root
         if xNode.parent:
             xNodeData.ranges = copy.deepcopy(xNode.parent.data.ranges)
@@ -56,6 +61,10 @@ class BinaryTree:
         
         # parameter chosen to be changed
         randParam = random.choice(self.parameters)
+        # a chosen parameter can't be a string
+        while isinstance(randParam, basestring):    
+            randParam = random.choice(self.parameters)
+            
         # value of the chosen parameter
         randValue = random.uniform(
                                    xNode.data.ranges[randParam]['minValue'], 
@@ -77,7 +86,7 @@ class BinaryTree:
         xNode.isLeaf = False
 
     ''' Updates ranges list of a node basing on its parent 
-    @param node must not be None! '''
+        @param node must not be None! '''
     def updateRanges(self, node):
         
         parentNode = node.parent
@@ -114,6 +123,19 @@ class BinaryTree:
         chosenNode.right = None;
         self.leaves.append(chosenNode)
         chosenNode.isLeaf = True
+        
+    ''' Get minValue and maxValue of parameters.
+        @param csv_data: data loaded with csv_loader 
+        @returns Dictionary of parameters and corresponding dictionary with
+        minValue and maxValue.'''
+    def getMinMaxParameterValue(self, csv_data):
+        minMaxParamValues = {}
+        # find max and min of every parameter
+        parameters = csv_data[0].keys()
+        for param in parameters:
+            seq = [x[param] for x in csv_data]
+            minMaxParamValues[param] = {"minValue": min(seq), "maxValue": max(seq)}
+        return minMaxParamValues
                   
     def maxDepth(self, root):
         if root == None:
@@ -135,7 +157,6 @@ class BinaryTree:
         self.printNode(self.root, graph)
         graph.write_png(path)
     
-    ''' TODO: Change printing text to more human-readable style.'''
     def printNode(self, root, graph):
         if root == None:
             pass
@@ -144,31 +165,43 @@ class BinaryTree:
             if root.parent == None:
                 pass
             elif root.isLeaf == True:
-                edge = pydot.Edge(root.parent.data.param + " " + str(root.parent.data.value),
+                edge = pydot.Edge(root.parent.data.param + " " +  "%.2f" % root.parent.data.value,
                                   "Leaf")
                 graph.add_edge(edge)
             else:    
-                edge = pydot.Edge(root.parent.data.param + " " + str(root.parent.data.value),
-                                  root.data.param + " " + str(root.data.value))
+                edge = pydot.Edge(root.parent.data.param + " " + "%.2f" % root.parent.data.value,
+                                  root.data.param + " " + "%.2f" % root.data.value)
                 graph.add_edge(edge)
             self.printNode(root.right, graph)
 
 
 if __name__ == "__main__":
 
-    # binary tree working on 3 parameters
-    # makes 4 nodes + 5 empty leaves
     print "binary tree"
     
-    parameters = ["param1", "param2", "param3"]
+    # load csv_file
+    cars = csv_loader.loadCars("small_cars.csv")
+     
+    # get parameters of csv_file
+    parameters = cars[0].keys()
     
-    newTree = BinaryTree(parameters)
+    print "Parameters:"
+    print parameters
+    
+    print "Csv data:"
+    for car in cars:
+        print car
+    
+    newTree = BinaryTree(cars)
     newTree.insertRandom()
     newTree.insertRandom()
+    newTree.insertRandom()
+    newTree.insertRandom() 
     newTree.insertRandom()
     newTree.insertRandom()
     # now removes one of possible to remove nodes
     newTree.removeRandom()
-    
+     
     # generate output graph
     newTree.printTree("graph.png")
+    
