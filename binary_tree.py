@@ -112,53 +112,6 @@ class BinaryTree:
         chosenNode.right = None;
         self.leaves.append(chosenNode)
                   
-        
-    '''Co to ma robic? :D
-    @deprecated'''
-    def addNode(self, data):
-        # creates a new node and returns it
-        return Node(data)
-
-    ''' @note Rekurencyjne wstawianie nie ma zastosowania
-    @deprecated'''
-    def insert_deprecated(self, root, data):
-        if root == None:
-            # if there is no data, add the new one
-            return self.addNode(data)
-        else:
-            # find a place to insert
-            if data <= root.data:
-                # go to left sub-tree
-                root.left = self.insert_deprecated(root.left, data)
-            else:
-                # go to right sub-tree
-                root.right = self.insert_deprecated(root.right, data)
-            return root
-
-    ''' @note Chyba nie bedzie miec zastosowania '''
-    def isInserted(self, root, data_to_find):
-        # check if data is inserted into a tree
-        if root == None:
-            return False
-        else:
-            # we found it!
-            if data_to_find == root.data:
-                return True
-            else:
-                if data_to_find < root.data:
-                    # left sub-tree
-                    return self.isInserted(root.left, data_to_find)
-                else:
-                    # right sub-tree
-                    return self.isInserted(root.right, data_to_find)
-
-    ''' data jest klasa, wiec tak naprawde nie wiem, co mogloby to zwracac 
-    @deprecated '''
-    def minValue(self, root):
-        while(root.left != None):
-            root = root.left
-        return root.data
-
     def maxDepth(self, root):
         if root == None:
             return 0
@@ -195,17 +148,3 @@ if __name__ == "__main__":
     newTree.insertRandom()
     # now removes one of possible to remove nodes
     newTree.removeRandom()
-
-    '''
-    tree = BinaryTree()
-    root = tree.addNode(3)
-    for i in range(1, 5):
-        tree.insert_deprecated(root, i)
-
-    print "Binary tree: "
-    tree.printTree(root)
-    print
-    print "Depth: ", tree.maxDepth(root)
-    print "Size: ", tree.size(root)
-    '''
-    
