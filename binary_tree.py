@@ -30,6 +30,7 @@ class Node:
 
 ''' A binary tree '''
 class BinaryTree:
+    maxSize = 10
     
     ''' Constructs empty binary tree '''
     def __init__(self, csv_data):
@@ -43,6 +44,11 @@ class BinaryTree:
         
         # Get min and max values of each parameter
         self.minMaxParamValues = self.getMinMaxParameterValue(self.csv_data)
+        
+    ''' Generating random tree of depht = maxSize / 2. '''
+    def generate(self):
+        while self.maxDepth(self.root) != self.maxSize / 2:
+            self.insertRandom()
 
     ''' Inserts random node choosing random parameter with a random range '''
     def insertRandom(self):
@@ -62,7 +68,7 @@ class BinaryTree:
         # parameter chosen to be changed
         randParam = random.choice(self.parameters)
         # a chosen parameter can't be a string
-        while isinstance(randParam, basestring):    
+        while isinstance(xNode.data.ranges[randParam]['minValue'], basestring):    
             randParam = random.choice(self.parameters)
             
         # value of the chosen parameter
@@ -138,7 +144,7 @@ class BinaryTree:
         return minMaxParamValues
                   
     def maxDepth(self, root):
-        if root == None:
+        if root.isLeaf == True:
             return 0
         else:
             ldepth = self.maxDepth(root.left)
@@ -193,6 +199,7 @@ if __name__ == "__main__":
         print car
     
     newTree = BinaryTree(cars)
+#     newTree.generate()
     newTree.insertRandom()
     newTree.insertRandom()
     newTree.insertRandom()
@@ -201,6 +208,9 @@ if __name__ == "__main__":
     newTree.insertRandom()
     # now removes one of possible to remove nodes
     newTree.removeRandom()
+    
+    print newTree.maxDepth(newTree.root)
+    
      
     # generate output graph
     newTree.printTree("graph.png")
