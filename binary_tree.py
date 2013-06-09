@@ -136,8 +136,7 @@ class BinaryTree:
         self.printNode(self.root, graph)
         graph.write_png(path)
     
-    ''' TODO: Change printing text to more human-readable style.
-        Parameter name has to be added instead of just a number.'''
+    ''' TODO: Change printing text to more human-readable style.'''
     def printNode(self, root, graph):
         if root == None:
             pass
