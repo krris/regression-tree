@@ -4,6 +4,7 @@
 import sys
 import random
 import copy
+import pydot
 
 ''' Data connected with every node
 TODO: change maxint/minint to valid max/min value taken from datasource file'''
@@ -26,6 +27,7 @@ class Node:
         self.right = None
         self.parent = None
         self.data = data
+        self.isLeaf = True
 
 ''' A binary tree '''
 class BinaryTree:
@@ -73,6 +75,7 @@ class BinaryTree:
         self.leaves.append(xNode.right)
         # xNode is not a leaf anymore
         self.leaves.remove(xNode)
+        xNode.isLeaf = False
 
     ''' Updates ranges list of a node basing on its parent 
     @param node must not be None! '''
@@ -111,6 +114,7 @@ class BinaryTree:
         chosenNode.left = None;
         chosenNode.right = None;
         self.leaves.append(chosenNode)
+        chosenNode.isLeaf = True
                   
     def maxDepth(self, root):
         if root == None:
@@ -126,14 +130,30 @@ class BinaryTree:
         else:
             return self.size(root.left) + 1 + self.size(root.right)
 
-    ''' TODO: how to print NodeData ? '''
-    def printTree(self, root):
+    ''' Generate a graph and save it to a file. '''
+    def printTree(self, path):
+        graph = pydot.Dot(graph_type='graph')
+        self.printNode(self.root, graph)
+        graph.write_png(path)
+    
+    ''' TODO: Change printing text to more human-readable style.
+        Parameter name has to be added instead of just a number.'''
+    def printNode(self, root, graph):
         if root == None:
             pass
         else:
-            self.printTree(root.left)
-            print root.data,
-            self.printTree(root.right)
+            self.printNode(root.left, graph)
+            if root.parent == None:
+                pass
+            elif root.isLeaf == True:
+                edge = pydot.Edge(str(root.parent.data.param) + " " + str(root.parent.data.value),
+                                  "Leaf")
+                graph.add_edge(edge)
+            else:    
+                edge = pydot.Edge(str(root.parent.data.param) + " " + str(root.parent.data.value),
+                                  str(root.data.param) + " " + str(root.data.value))
+                graph.add_edge(edge)
+            self.printNode(root.right, graph)
 
 
 if __name__ == "__main__":
@@ -148,3 +168,6 @@ if __name__ == "__main__":
     newTree.insertRandom()
     # now removes one of possible to remove nodes
     newTree.removeRandom()
+    
+    # generate output graph
+    newTree.printTree("graph.png")
