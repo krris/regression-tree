@@ -88,6 +88,30 @@ class BinaryTree:
             ranges[parentParam]['maxValue'] = parentValue
         else:
             ranges[parentParam]['minValue'] = parentValue
+       
+    ''' Removes random node
+        Only leaf parent or root can be removed. '''
+    def removeRandom(self):
+        # len(leaves) == 1 means tree is empty 
+        if len(self.leaves) == 1:
+            return
+        
+        # list of candidates to remove
+        # we can remove only nodes which two sons are leaves
+        nodes = []
+        for leaf in self.leaves:
+            
+            if leaf.parent.right.data == None and leaf.parent.left.data == None:
+                if nodes.count(leaf.parent) == 0:
+                    nodes.append(leaf.parent)
+        
+        # choose a node and turn it into a leaf
+        chosenNode = nodes[random.randint(0, len(nodes) - 1)]
+        chosenNode.data = None;
+        chosenNode.left = None;
+        chosenNode.right = None;
+        self.leaves.append(chosenNode)
+                  
         
     '''Co to ma robic? :D
     @deprecated'''
@@ -162,13 +186,15 @@ class BinaryTree:
 if __name__ == "__main__":
 
     # binary tree working on 3 parameters
-    # makes 4 nodes + 5 leaves
+    # makes 4 nodes + 5 empty leaves
     print "binary tree"
     newTree = BinaryTree(3)
     newTree.insertRandom()
     newTree.insertRandom()
     newTree.insertRandom()
     newTree.insertRandom()
+    # now removes one of possible to remove nodes
+    newTree.removeRandom()
 
     '''
     tree = BinaryTree()
