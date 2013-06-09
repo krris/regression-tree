@@ -4,6 +4,7 @@
 import random
 import copy
 import pydot
+from itertools import count
 
 import csv_loader
 
@@ -20,6 +21,7 @@ class NodeData:
 ''' Node of a tree '''    
 class Node:
     left, right, parent, data = None, None, None, None
+    idCounter = count(0)
 
     def __init__(self, data):
         self.left = None
@@ -27,10 +29,12 @@ class Node:
         self.parent = None
         self.data = data
         self.isLeaf = True
+        self.id = self.idCounter.next()
+        
 
 ''' A binary tree '''
 class BinaryTree:
-    maxSize = 10
+    maxSize = 30
     
     ''' Constructs empty binary tree '''
     def __init__(self, csv_data):
@@ -160,6 +164,8 @@ class BinaryTree:
     ''' Generate a graph and save it to a file. '''
     def printTree(self, path):
         graph = pydot.Dot(graph_type='graph')
+        parentId = 0
+        childId = 1
         self.printNode(self.root, graph)
         graph.write_png(path)
     
@@ -171,12 +177,19 @@ class BinaryTree:
             if root.parent == None:
                 pass
             elif root.isLeaf == True:
-                edge = pydot.Edge(root.parent.data.param + " " +  "%.2f" % root.parent.data.value,
-                                  "Leaf")
+                parentNodeName = (root.parent.data.param + 
+                                " %.2f" % root.parent.data.value + 
+                                " id: " + str(root.parent.id))
+                childNodeName = "Leaf" + " id: " + str(root.id)
+                edge = pydot.Edge(parentNodeName, childNodeName)
                 graph.add_edge(edge)
             else:    
-                edge = pydot.Edge(root.parent.data.param + " " + "%.2f" % root.parent.data.value,
-                                  root.data.param + " " + "%.2f" % root.data.value)
+                parentNodeName = (root.parent.data.param + 
+                                 " %.2f" % root.parent.data.value + 
+                                 " id: " + str(root.parent.id))
+                childNodeName = (root.data.param + " %.2f" % root.data.value + 
+                                " id: " + str(root.id))
+                edge = pydot.Edge(parentNodeName, childNodeName)
                 graph.add_edge(edge)
             self.printNode(root.right, graph)
 
@@ -199,15 +212,15 @@ if __name__ == "__main__":
         print car
     
     newTree = BinaryTree(cars)
-#     newTree.generate()
-    newTree.insertRandom()
-    newTree.insertRandom()
-    newTree.insertRandom()
-    newTree.insertRandom() 
-    newTree.insertRandom()
-    newTree.insertRandom()
+    newTree.generate()
+#     newTree.insertRandom()
+#     newTree.insertRandom()
+#     newTree.insertRandom()
+#     newTree.insertRandom() 
+#     newTree.insertRandom()
+#     newTree.insertRandom()
     # now removes one of possible to remove nodes
-    newTree.removeRandom()
+#     newTree.removeRandom()
     
     print newTree.maxDepth(newTree.root)
     
