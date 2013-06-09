@@ -34,7 +34,8 @@ class Node:
 
 ''' A binary tree '''
 class BinaryTree:
-    maxSize = 30
+    # maximal depth of a tree
+    maxDepth = 30
     
     ''' Constructs empty binary tree '''
     def __init__(self, csv_data):
@@ -51,7 +52,7 @@ class BinaryTree:
         
     ''' Generating random tree of depht = maxSize / 2. '''
     def generate(self):
-        while self.maxDepth(self.root) != self.maxSize / 2:
+        while self.maxDepth(self.root) != self.maxDepth/ 2:
             self.insertRandom()
 
     ''' Inserts random node choosing random parameter with a random range '''
