@@ -164,8 +164,6 @@ class BinaryTree:
     ''' Generate a graph and save it to a file. '''
     def printTree(self, path):
         graph = pydot.Dot(graph_type='graph')
-        parentId = 0
-        childId = 1
         self.printNode(self.root, graph)
         graph.write_png(path)
     
@@ -213,17 +211,8 @@ if __name__ == "__main__":
     
     newTree = BinaryTree(cars)
     newTree.generate()
-#     newTree.insertRandom()
-#     newTree.insertRandom()
-#     newTree.insertRandom()
-#     newTree.insertRandom() 
-#     newTree.insertRandom()
-#     newTree.insertRandom()
-    # now removes one of possible to remove nodes
-#     newTree.removeRandom()
     
     print newTree.maxDepth(newTree.root)
-    
      
     # generate output graph
     newTree.printTree("graph.png")
