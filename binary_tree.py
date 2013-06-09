@@ -11,12 +11,11 @@ TODO: change maxint/minint to valid max/min value taken from datasource file'''
 class NodeData:
     param = None
     value = 0
-    ranges = None
-
-    def __init__(self, param_no):
-        self.ranges = [] 
-        for i in range(param_no):
-            self.ranges.append({'minValue': -sys.maxint - 1, 'maxValue': sys.maxint})
+    
+    def __init__(self, parameters):
+        self.ranges = {}
+        for p in parameters:
+            self.ranges[p] = {'minValue': -sys.maxint - 1, 'maxValue': sys.maxint}
             
 ''' Node of a tree '''    
 class Node:
@@ -33,19 +32,19 @@ class Node:
 class BinaryTree:
     
     ''' Constructs empty binary tree 
-    @param param_no number of parameters in the datasource '''
-    def __init__(self, param_no):
+    @parameters A list of available parameters from the datasource '''
+    def __init__(self, parameters):
         self.root = Node(None)
         self.root.parent = None
         self.leaves = [self.root]
-        self.param_no = param_no
+        self.parameters = parameters
 
     ''' Inserts random node choosing random parameter with a random range '''
     def insertRandom(self):
         # leaf chosen to turn into a node
         xNode = self.leaves[random.randint(0, len(self.leaves) - 1)]
         
-        xNodeData = NodeData(self.param_no)
+        xNodeData = NodeData(self.parameters)
         # copying ranges list from the parent if it's not root
         if xNode.parent:
             xNodeData.ranges = copy.deepcopy(xNode.parent.data.ranges)
@@ -56,7 +55,7 @@ class BinaryTree:
             xNode.data = xNodeData
         
         # parameter chosen to be changed
-        randParam = random.randint(0, self.param_no - 1)
+        randParam = random.choice(self.parameters)
         # value of the chosen parameter
         randValue = random.uniform(
                                    xNode.data.ranges[randParam]['minValue'], 
@@ -146,12 +145,12 @@ class BinaryTree:
             if root.parent == None:
                 pass
             elif root.isLeaf == True:
-                edge = pydot.Edge(str(root.parent.data.param) + " " + str(root.parent.data.value),
+                edge = pydot.Edge(root.parent.data.param + " " + str(root.parent.data.value),
                                   "Leaf")
                 graph.add_edge(edge)
             else:    
-                edge = pydot.Edge(str(root.parent.data.param) + " " + str(root.parent.data.value),
-                                  str(root.data.param) + " " + str(root.data.value))
+                edge = pydot.Edge(root.parent.data.param + " " + str(root.parent.data.value),
+                                  root.data.param + " " + str(root.data.value))
                 graph.add_edge(edge)
             self.printNode(root.right, graph)
 
@@ -161,7 +160,10 @@ if __name__ == "__main__":
     # binary tree working on 3 parameters
     # makes 4 nodes + 5 empty leaves
     print "binary tree"
-    newTree = BinaryTree(3)
+    
+    parameters = ["param1", "param2", "param3"]
+    
+    newTree = BinaryTree(parameters)
     newTree.insertRandom()
     newTree.insertRandom()
     newTree.insertRandom()
