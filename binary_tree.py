@@ -176,17 +176,17 @@ class BinaryTree:
                 pass
             elif root.isLeaf == True:
                 parentNodeName = (root.parent.data.param + 
-                                " %.2f" % root.parent.data.value + 
-                                " id: " + str(root.parent.id))
-                childNodeName = "Leaf" + " id: " + str(root.id)
+                                "\n%.2f" % root.parent.data.value + 
+                                "\nid: " + str(root.parent.id))
+                childNodeName = "Leaf" + "\nid: " + str(root.id)
                 edge = pydot.Edge(parentNodeName, childNodeName)
                 graph.add_edge(edge)
             else:    
                 parentNodeName = (root.parent.data.param + 
-                                 " %.2f" % root.parent.data.value + 
-                                 " id: " + str(root.parent.id))
-                childNodeName = (root.data.param + " %.2f" % root.data.value + 
-                                " id: " + str(root.id))
+                                 "\n%.2f" % root.parent.data.value + 
+                                 "\nid: " + str(root.parent.id))
+                childNodeName = (root.data.param + "\n%.2f" % root.data.value + 
+                                "\nid: " + str(root.id))
                 edge = pydot.Edge(parentNodeName, childNodeName)
                 graph.add_edge(edge)
             self.printNode(root.right, graph)
