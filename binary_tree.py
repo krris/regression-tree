@@ -6,6 +6,7 @@ import copy
 import pydot
 from itertools import count
 import math
+import sys
 
 import csv_loader
 
@@ -27,6 +28,7 @@ class NodeData:
 class Node:
     ''' Node of a tree.'''  
     idCounter = count(0)
+    left, right, parent, data = None, None, None, None
 
     def __init__(self):
         self.left = None
@@ -39,7 +41,7 @@ class Node:
 class BinaryTree:
     ''' A binary tree.'''
     # maximal depth of a tree
-    maxDepth = 10
+    maxDepth = 30
     
     def __init__(self, csvData, parameterToPredict):
         ''' Constructs empty binary tree. '''
@@ -59,6 +61,23 @@ class BinaryTree:
         ''' Generating random tree of depht = maxSize / 2.'''
         while self.getTreeDepth(self.root) != self.maxDepth / 2:
             self.insertRandom()
+            
+    def generateNeighbouringTree(self):
+        newTree = copy.deepcopy(self)
+        choice = random.choice(["insert", "delete"])
+        
+        if self.getTreeDepth(self.root) == self.maxDepth:
+            newTree.removeRandom()
+            return newTree
+        
+        if choice == "insert":
+            newTree.insertRandom()
+        elif choice == "delete":
+            newTree.removeRandom()
+        else:
+            raise ValueError
+        return newTree
+    
 
     def insertRandom(self):
         ''' Inserts random node choosing random parameter with a random range'''
@@ -160,13 +179,16 @@ class BinaryTree:
         nodes = []
         for leaf in self.leaves:
             
-            if leaf.parent.right.data == None and leaf.parent.left.data == None:
+            if leaf.parent.right.isLeaf and leaf.parent.left.isLeaf:
                 if nodes.count(leaf.parent) == 0:
                     nodes.append(leaf.parent)
         
         # choose a node and turn it into a leaf
         chosenNode = nodes[random.randint(0, len(nodes) - 1)]
-        chosenNode.data = None;
+#         chosenNode.data = None
+        chosenNode.data = NodeData()
+        self.leaves.remove(chosenNode.left)
+        self.leaves.remove(chosenNode.right)
         chosenNode.left = None;
         chosenNode.right = None;
         self.leaves.append(chosenNode)
@@ -204,6 +226,11 @@ class BinaryTree:
                 if len(seq) == 0:
                     continue
                 root.data.meanData[param] = (sum(seq) / len(seq))   
+                
+    def clearAllFittingData(self):
+        for leaf in self.leaves:
+            if leaf.data.fittingData != []:
+                del leaf.data.fittingData[:]
                  
     def insertDataCollection(self, collection):
         for data in collection:
@@ -307,8 +334,53 @@ class BinaryTree:
                 edge = pydot.Edge(parentNodeName, childNodeName)
                 graph.add_edge(edge)
             self.printNode(root.right, graph)
+            
+def simulatedAnnealing(csvData, paramToPredict, temp=1000, maxDepth=6):
+    BinaryTree.maxDepth = maxDepth
+    tree = BinaryTree(csvData, paramToPredict)
+    tree.generate()
+    tree.insertDataCollection(csvData)
+    tree.computeMeanLeavesValues()
+    treeMSE = tree.getMeanSquaredError()
+    
+    bestTree = copy.deepcopy(tree)
+    bestTreeMSE = treeMSE
+    
+    newTreeMSE = None
+    
+    while temp > 0:
+        newTree = tree.generateNeighbouringTree()
+        newTree.clearAllFittingData()
+        newTree.insertDataCollection(csvData)
+        newTree.computeMeanLeavesValues()
+        newTreeMSE = newTree.getMeanSquaredError()
+        print newTreeMSE
+        
+        if newTreeMSE < bestTreeMSE:
+            bestTree = copy.deepcopy(newTree)
+            bestTreeMSE = newTreeMSE
+            print bestTreeMSE
+             
+        delta = newTreeMSE - treeMSE
+        if delta < 0:
+            tree = copy.deepcopy(newTree)
+            treeMSE = newTreeMSE
+        else:
+            x = random.uniform(0,1)
+            if x < math.exp(-delta/temp):
+                print "Get a worst tree!"
+                tree = copy.deepcopy(newTree)
+                treeMSE = newTreeMSE
+        temp = changeTemperature(temp)
+        print "temp: ", temp
+    
+    return bestTree
 
-
+def changeTemperature(temp):
+    step = 10
+    temp -= step
+    return temp
+        
 if __name__ == "__main__":
 
     print "binary tree"
@@ -319,28 +391,35 @@ if __name__ == "__main__":
     # get parameters of csv_file
     parameters = cars[0].keys()
     
-    print "Parameters:"
-    print parameters
-    
-    print "Csv data:"
-    for car in cars:
-        print car
-    
-#     paramToPredict = "Weight"
     paramToPredict = "Horsepower"
-#     paramToPredict = "Car"
-    newTree = BinaryTree(cars, paramToPredict)
-    newTree.generate()
-    
-    # insert data to a tree
-    newTree.insertDataCollection(cars)
-    newTree.computeMeanLeavesValues()
-    
-    print newTree.getTreeDepth(newTree.root)
-    
-    print "Mean squared error:"
-    print newTree.getMeanSquaredError()
-     
-    # generate output graph
-    newTree.printTree("graph.png")
+#     BinaryTree.maxDepth = 5
+#     newTree = BinaryTree(cars, paramToPredict)
+#     newTree.generate()
+#     newTree.insertDataCollection(cars)
+#     newTree.computeMeanLeavesValues()
+#     print newTree.getMeanSquaredError()
+#     newTree.printTree("before.png")
+#     
+#     newTree.removeRandom()
+#     newTree.removeRandom() 
+#     newTree.insertRandom()
+#     # insert data to a tree
+#     newTree.clearAllFittingData()
+#     newTree.insertDataCollection(cars)
+#     newTree.computeMeanLeavesValues()
+#     print newTree.getMeanSquaredError()
+#     newTree.printTree("after.png")
+      
+#     print newTree.getTreeDepth(newTree.root)
+#       
+#     print "Mean squared error:"
+#     print newTree.getMeanSquaredError()
+#      
+    # generete neighbouring tree
+    bestTree = simulatedAnnealing(cars, paramToPredict)
+    print bestTree.getMeanSquaredError()
+#       
+#     # generate output graph
+#     newTree.printTree("newTree.png")
+    bestTree.printTree("bestTree.png")
     
