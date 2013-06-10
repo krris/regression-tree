@@ -5,6 +5,7 @@ import random
 import copy
 import pydot
 from itertools import count
+import math
 
 import csv_loader
 
@@ -38,7 +39,7 @@ class Node:
 class BinaryTree:
     ''' A binary tree.'''
     # maximal depth of a tree
-    maxDepth = 30
+    maxDepth = 10
     
     def __init__(self, csvData, parameterToPredict):
         ''' Constructs empty binary tree. '''
@@ -209,7 +210,8 @@ class BinaryTree:
             self.insertData(data, self.root)
             
     def insertData(self, data, root):
-        if root.right == None and root.left == None:
+#         if root.right == None and root.left == None:
+        if root.isLeaf:
             root.data.fittingData.append(data)
             return
         else:
@@ -217,9 +219,38 @@ class BinaryTree:
                 self.insertData(data, root.left)
             else:
                 self.insertData(data, root.right)
-            return
+#             return
+
+    def getMeanSquaredError(self):
+        ''' Compute MSE.
+        MSE = 1/n * sum_n (prediction_i - trueValue_i)^2'''
+        parameter = self.paramToPredict
+        sum_n = 0
+        for dataRow in self.csvData:
+            predictionValue = self.predictValue(dataRow, parameter, self.root)
+            trueValue = dataRow[parameter]
+            sum_n += math.pow(predictionValue - trueValue, 2)
         
-                  
+        n = len(self.csvData)
+        mse = sum_n / n
+        return mse
+    
+    def predictValue(self, dataRow, parameter, root):
+        '''Get prediction value of a given parameter to predict.'''
+        
+        if root.isLeaf:
+            if parameter in root.data.meanData.keys():
+                value = root.data.meanData[parameter]
+                return value
+            else:
+                # just in case if there is no parameter mean value in a leaf
+                return 0
+        else:
+            if dataRow[root.data.param] < root.data.value:
+                return self.predictValue(dataRow, parameter, root.left)
+            else:
+                return self.predictValue(dataRow, parameter, root.right)
+         
     def getTreeDepth(self, root):
         if root.isLeaf == True:
             return 0
@@ -259,7 +290,7 @@ class BinaryTree:
                     for data in root.data.fittingData:
                         leafParamValue += data[self.paramToPredict] + '\n'
                 elif self.paramToPredict in root.data.meanData: 
-                    # print mean valuo of predicted data
+                    # print mean value of predicted data
                     leafParamValue += ("Mean " + self.paramToPredict + ":\n"
                                  + "%.2f" % root.data.meanData[self.paramToPredict])
                 else:
@@ -283,7 +314,7 @@ if __name__ == "__main__":
     print "binary tree"
     
     # load csv_file
-    cars = csv_loader.loadCars("small_cars.csv")
+    cars = csv_loader.loadCars("cars.csv")
      
     # get parameters of csv_file
     parameters = cars[0].keys()
@@ -296,8 +327,8 @@ if __name__ == "__main__":
         print car
     
 #     paramToPredict = "Weight"
-#     paramToPredict = "Horsepower"
-    paramToPredict = "Car"
+    paramToPredict = "Horsepower"
+#     paramToPredict = "Car"
     newTree = BinaryTree(cars, paramToPredict)
     newTree.generate()
     
@@ -306,6 +337,9 @@ if __name__ == "__main__":
     newTree.computeMeanLeavesValues()
     
     print newTree.getTreeDepth(newTree.root)
+    
+    print "Mean squared error:"
+    print newTree.getMeanSquaredError()
      
     # generate output graph
     newTree.printTree("graph.png")
