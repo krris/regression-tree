@@ -1,12 +1,10 @@
-Car;MPG;Cylinders;Displacement;Horsepower;Weight;Acceleration;Model
-Chevrolet Chevelle Malibu;18.0;8;307.0;130.0;3504.;12.0;70
-Buick Skylark 320;15.0;8;350.0;165.0;3693.;11.5;70
-Plymouth Satellite;18.0;8;318.0;150.0;3436.;11.0;70
-AMC Rebel SST;16.0;8;304.0;150.0;3433.;12.0;70
-Ford Torino;17.0;8;302.0;140.0;3449.;10.5;70;US
-Ford Galaxie 500;15.0;8;429.0;198.0;4341.;10.0;70
-Chevrolet Impala;14.0;8;454.0;220.0;4354.;9.0;70
-Plymouth Fury iii;14.0;8;440.0;215.0;4312.;8.5;70
-Pontiac Catalina;14.0;8;455.0;225.0;4425.;10.0;70
-AMC Ambassador DPL;15.0;8;390.0;190.0;3850.;8.5;70
-Citroen DS-21 Pallas;0;4;133.0;115.0;3090.;17.5;70
+Car;MPG;Cylinders;Displacement;Horsepower;Weight;Acceleration;Model;Origin
+Chevrolet Chevelle Malibu;18.0;8;307.0;130.0;3504.;12.0;70;US
+Chevrolet Chevelle Concours (sw);13.0;8;307.0;130.0;4098.;14.0;72;US
+Ford Gran Torino (sw);13.0;8;302.0;140.0;4294.;16.0;72;US
+Datsun 1200;35.0;4;72.00;69.00;1613.;18.0;71;Japan
+Volkswagen Model 111;27.0;4;97.00;60.00;1834.;19.0;71;Europe
+Plymouth Cricket;26.0;4;91.00;70.00;1955.;20.5;71;US
+Toyota Corolla Hardtop;24.0;4;113.0;95.00;2278.;15.5;72;Japan
+Chevrolet Bel Air;15.0;8;350.0;145.0;4440.;14.0;75;US
+Plymouth Grand Fury;16.0;8;318.0;150.0;4498.;14.5;75;US
