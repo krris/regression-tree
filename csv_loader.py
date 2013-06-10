@@ -9,7 +9,8 @@ def printCsv(csv_file):
         for row in reader:
             print row
 
-''' Load cars dataset with following columns:
+def loadCars(csv_file):
+    ''' Load cars dataset with following columns:
     Car(STRING) 
     MPG(DOUBLE)
     Cylinders(INT)
@@ -19,9 +20,8 @@ def printCsv(csv_file):
     Acceleration(DOUBLE)
     Model(INT)
     Origin(CAT)
-    @return List of dictionaries with information about car parameters.
-'''
-def loadCars(csv_file):
+    @return List of dictionaries with information about car parameters.'''
+    
     cars = []
     with open(csv_file, 'rb') as f:
         reader = csv.reader(f, delimiter=';')
@@ -33,9 +33,10 @@ def loadCars(csv_file):
             cars.append(car)
     return convertCarData(cars)
 
-''' Converting cars list of dictionaries. Will parse proper parameters from 
-strings to float or integer. '''
 def convertCarData(cars):
+    ''' Converting cars list of dictionaries. Will parse proper parameters from 
+    strings to float or integer. '''
+
     for car in cars:
         car["MPG"] = float(car["MPG"])
         car["Cylinders"] = int(car["Cylinders"])

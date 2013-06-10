@@ -8,26 +8,24 @@ from itertools import count
 
 import csv_loader
 
-''' Data connected with every node'''
 class NodeData:
+    ''' Data connected with every node'''
     param = None
     value = 0
     
-    
-    ''' @param minMaxParamValues: dictionary of minValue and maxValue of
-        every parameter'''
     def __init__(self, parameters=None, minMaxParamValues=None):
+        ''' @param minMaxParamValues: dictionary of minValue and maxValue of
+        every parameter'''
+        
         self.ranges = copy.deepcopy(minMaxParamValues)
         # list of data which fits to current leaf
         self.fittingData = []
         # computed mean values of each parameter (only when node is a leaf)
         self.meanData = {}
-
-            
-''' Node of a tree '''    
+  
 class Node:
+    ''' Node of a tree.'''  
     idCounter = count(0)
-#     left, right, parent, data = None, None, None, None
 
     def __init__(self):
         self.left = None
@@ -36,15 +34,14 @@ class Node:
         self.data = NodeData()
         self.isLeaf = True
         self.id = self.idCounter.next()
-        
 
-''' A binary tree '''
 class BinaryTree:
+    ''' A binary tree.'''
     # maximal depth of a tree
-    maxDepth = 10
+    maxDepth = 30
     
-    ''' Constructs empty binary tree. '''
     def __init__(self, csvData, parameterToPredict):
+        ''' Constructs empty binary tree. '''
         self.root = Node()
         self.root.parent = None
         self.leaves = [self.root]
@@ -57,13 +54,13 @@ class BinaryTree:
         # Get min and max values of each parameter
         self.minMaxParamValues = self.getMinMaxParameterValue(self.csvData)
         
-    ''' Generating random tree of depht = maxSize / 2. '''
     def generate(self):
+        ''' Generating random tree of depht = maxSize / 2.'''
         while self.getTreeDepth(self.root) != self.maxDepth / 2:
             self.insertRandom()
 
-    ''' Inserts random node choosing random parameter with a random range '''
     def insertRandom(self):
+        ''' Inserts random node choosing random parameter with a random range'''
         # leaf chosen to turn into a node
         xNode = self.leaves[random.randint(0, len(self.leaves) - 1)]
         
@@ -99,11 +96,12 @@ class BinaryTree:
         xNode.isLeaf = False
         
         
-    ''' Choose a random parameter out of all available parameters without 
-    a parameter which will be predicted. The parameter value can't be a string
-    (because we want to generate a regression tree, not a classification tree).
-    '''
     def chooseRandomParameter(self, parameters):
+        ''' Choose a random parameter out of all available parameters without 
+        a parameter which will be predicted. The parameter value can't be a 
+        string (because we want to generate a regression tree, not a 
+        classification tree). '''
+
         randParam = random.choice(self.parameters)
         # a chosen parameter can't be a string
         while (self.isParameterValue(randParam, basestring) or 
@@ -111,10 +109,10 @@ class BinaryTree:
             randParam = random.choice(self.parameters)
         return randParam
     
-    ''' Choose a random value for a given parameter. If parameter value is
-    a floating point number, will generate also a floating point number. If 
-    parameter value is an integer, will generate an integer.'''
     def chooseRandomValue(self, node, parameter):
+        ''' Choose a random value for a given parameter. If parameter value is
+        a floating point number, will generate also a floating point number. If 
+        parameter value is an integer, will generate an integer.'''
         # if parameter value is float
         if self.isParameterValue(parameter, float):
             randValue = random.uniform(
@@ -131,13 +129,13 @@ class BinaryTree:
                              which is not an integer or float!''')
         return randValue
     
-    ''' Check if parameter value is the same type like typeToCompare.'''
     def isParameterValue(self, parameter, typeToCompare):
+        ''' Check if parameter value is the same type like typeToCompare.'''
         return isinstance(self.csvData[0][parameter], typeToCompare)
 
-    ''' Updates ranges list of a node basing on its parent 
-        @param node must not be None! '''
     def updateRanges(self, node):
+        ''' Updates ranges list of a node basing on its parent 
+        @param node must not be None! '''
         
         parentNode = node.parent
         parentValue = parentNode.data.value
@@ -150,9 +148,8 @@ class BinaryTree:
         else:
             ranges[parentParam]['minValue'] = parentValue
        
-    ''' Removes random node
-        Only leaf parent or root can be removed. '''
     def removeRandom(self):
+        ''' Removes random node. Only leaf parent or root can be removed. '''
         # len(leaves) == 1 means tree is empty 
         if len(self.leaves) == 1:
             return
@@ -174,11 +171,12 @@ class BinaryTree:
         self.leaves.append(chosenNode)
         chosenNode.isLeaf = True
         
-    ''' Get minValue and maxValue of parameters.
+    def getMinMaxParameterValue(self, csvData):    
+        ''' Get minValue and maxValue of parameters.
         @param csvData: data loaded with csv_loader 
         @returns Dictionary of parameters and corresponding dictionary with
         minValue and maxValue.'''
-    def getMinMaxParameterValue(self, csvData):
+
         minMaxParamValues = {}
         # find max and min of every parameter
         parameters = csvData[0].keys()
@@ -187,8 +185,9 @@ class BinaryTree:
             minMaxParamValues[param] = {"minValue": min(seq), "maxValue": max(seq)}
         return minMaxParamValues
     
-    ''' Computes mean values for every leaf and saves it into meanData dictionary.'''
     def computeMeanLeavesValues(self):
+        ''' Computes mean values for every leaf and saves it into meanData 
+        dictionary.'''
         for leaf in self.leaves:
             self.computeMeanValuesForNode(leaf)
             
@@ -235,8 +234,8 @@ class BinaryTree:
         else:
             return self.size(root.left) + 1 + self.size(root.right)
 
-    ''' Generate a graph and save it to a file. '''
     def printTree(self, path):
+        ''' Generate a graph and save it to a file. '''
         graph = pydot.Dot(graph_type='graph')
         self.printNode(self.root, graph)
         graph.write_png(path)
@@ -297,8 +296,8 @@ if __name__ == "__main__":
         print car
     
 #     paramToPredict = "Weight"
-    paramToPredict = "Horsepower"
-#     paramToPredict = "Car"
+#     paramToPredict = "Horsepower"
+    paramToPredict = "Car"
     newTree = BinaryTree(cars, paramToPredict)
     newTree.generate()
     
