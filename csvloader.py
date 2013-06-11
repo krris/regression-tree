@@ -33,6 +33,41 @@ def loadCars(csv_file):
             cars.append(car)
     return convertCarData(cars)
 
+def loadCameras(csv_file):
+    cameras = []
+    with open(csv_file, 'rb') as f:
+        reader = csv.reader(f, delimiter=';')
+        parameters = reader.next()
+        for row in reader:
+            camera = {}
+            for p in parameters:
+                camera[p] = row[parameters.index(p)]
+            cameras.append(camera)
+    return convertCameraData(cameras)
+
+def convertCameraData(cameras):
+    ''' Converting cameras list of dictionaries. Will parse proper parameters from 
+    strings to float or integer. '''
+
+    for c in cameras:
+        c["Release_date"] = int(c["Release_date"])
+        c["Max_resolution"] = float(c["Max_resolution"])
+        c["Low_resolution"] = float(c["Low_resolution"])
+        c["Effective_pixels"] = float(c["Effective_pixels"])
+        c["Zoom_wide"] = float(c["Zoom_wide"])
+        
+        c["Zoom_tele"] = float(c["Zoom_tele"])
+        c["Normal_focus_range"] = float(c["Normal_focus_range"])
+        c["Macro_focus_range"] = float(c["Macro_focus_range"])
+        c["Storage_included"] = float(c["Storage_included"])
+        c["Weight_inc_batteries"] = float(c["Weight_inc_batteries"])
+        
+        
+        c["Dimensions"] = float(c["Dimensions"])
+        c["Price"] = float(c["Price"])
+    return cameras
+    
+
 def convertCarData(cars):
     ''' Converting cars list of dictionaries. Will parse proper parameters from 
     strings to float or integer. '''

@@ -162,8 +162,14 @@ if __name__ == "__main__":
     print ("""Input csv :  %s\nparam: %s\ntemp: %d\nstep: %f\nmaxDepth: %d""" 
            % (ifile, paramToPredict, temperature, step, maxDepth))
     
-    # load csv_file
-    csvData = csvloader.loadCars(ifile)
+    # TODO
+    # load csv_file (camera.csv or cars.csv only)
+    if ifile == "cars.csv":
+        csvData = csvloader.loadCars(ifile)
+        csvDir = "cars/"
+    else:
+        csvData = csvloader.loadCameras(ifile)
+        csvDir = "cameras/"
 
     result = simulatedAnnealing(csvData, paramToPredict, temperature=temperature, 
                                     maxDepth=maxDepth, step=step)
@@ -174,7 +180,7 @@ if __name__ == "__main__":
          
     if len(ofile) == 0:
         # if the directory does not exist, create it
-        directory = "img/" + "temp" + str(temperature) + "/"
+        directory = "img/" + csvDir + "temp" + str(temperature) + "/"
         if not os.path.exists(directory):
             os.makedirs(directory)
             
