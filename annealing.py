@@ -185,39 +185,11 @@ if __name__ == "__main__":
         path = ofile
     plotResult(result, "Temperature", paramToPredict + " Mean Squared Error",
                          pathToSave=path)
+    print "Function plotting written in: ", path
     
     # save output graph
     if len(graphPath) != 0:
         bestTree = result['bestTree']
-        bestTree.printTree(graphPath)
-    
-    print "Image written in: ", path
-            
-
-#     # load csv_file
-#     cars = csvloader.loadCars("cars.csv")
-#      
-#     # get parameters of csv_file
-#     parameters = cars[0].keys()
-#     
-# #     params = ["Horsepower", "Cylinders", "Displacement", "Weight", "Acceleration", "Model"]
-#     params = ["Horsepower"]
-#     
-#     maxDepth = 5
-#     step = 1
-#     temperature = 100
-#     for paramToPredict in params:
-#         result = simulatedAnnealing(cars, paramToPredict, temperature=temperature, 
-#                                     maxDepth=maxDepth, step=step)
-#         print "Result for: ", paramToPredict    
-#         print "Solution (best MSE): ", result['bestMSE']
-#         print "found, when temperature was: ", result['bestTreeTemp']
-#         
-#     path = ("img/" + "temp" + str(temperature) + "/" + paramToPredict + 
-#         "_max_depth_" + str(maxDepth) + ".png")
-#     
-#     plotResult(result, "Temperature", paramToPredict + " Mean Squared Error",
-#                      pathToSave=path)
-
-
+        bestTree.printTree(graphPath)            
+        print "Graph written in: ", graphPath
 
