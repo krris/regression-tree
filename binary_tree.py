@@ -6,7 +6,9 @@ import copy
 import pydot
 from itertools import count
 import math
-import sys
+import matplotlib.pyplot as plt
+import numpy as np
+
 
 import csv_loader
 
@@ -28,7 +30,6 @@ class NodeData:
 class Node:
     ''' Node of a tree.'''  
     idCounter = count(0)
-    left, right, parent, data = None, None, None, None
 
     def __init__(self):
         self.left = None
@@ -237,7 +238,6 @@ class BinaryTree:
             self.insertData(data, self.root)
             
     def insertData(self, data, root):
-#         if root.right == None and root.left == None:
         if root.isLeaf:
             root.data.fittingData.append(data)
             return
@@ -246,7 +246,6 @@ class BinaryTree:
                 self.insertData(data, root.left)
             else:
                 self.insertData(data, root.right)
-#             return
 
     def getMeanSquaredError(self):
         ''' Compute MSE.
@@ -335,7 +334,14 @@ class BinaryTree:
                 graph.add_edge(edge)
             self.printNode(root.right, graph)
             
-def simulatedAnnealing(csvData, paramToPredict, temp=1000, maxDepth=6):
+def simulatedAnnealing(csvData, paramToPredict, temperature=1000, maxDepth=6, step=1):
+    # a list of all computed Mean Squared Errors
+    allMSE = []
+    worstMSE = 0
+    
+    temp = temperature
+    
+    # set initial tree
     BinaryTree.maxDepth = maxDepth
     tree = BinaryTree(csvData, paramToPredict)
     tree.generate()
@@ -343,12 +349,13 @@ def simulatedAnnealing(csvData, paramToPredict, temp=1000, maxDepth=6):
     tree.computeMeanLeavesValues()
     treeMSE = tree.getMeanSquaredError()
     
+    # set best fitting tree
     bestTree = copy.deepcopy(tree)
     bestTreeMSE = treeMSE
-    
-    newTreeMSE = None
+    bestTreeTemp = None
     
     while temp > 0:
+        # get a neighbouring tree
         newTree = tree.generateNeighbouringTree()
         newTree.clearAllFittingData()
         newTree.insertDataCollection(csvData)
@@ -356,28 +363,57 @@ def simulatedAnnealing(csvData, paramToPredict, temp=1000, maxDepth=6):
         newTreeMSE = newTree.getMeanSquaredError()
         print newTreeMSE
         
+        # check if newTree gives better result than bestTree
         if newTreeMSE < bestTreeMSE:
             bestTree = copy.deepcopy(newTree)
             bestTreeMSE = newTreeMSE
-            print bestTreeMSE
+            bestTreeTemp = temperature - temp
              
         delta = newTreeMSE - treeMSE
-        if delta < 0:
+        if newTreeMSE < treeMSE:
             tree = copy.deepcopy(newTree)
             treeMSE = newTreeMSE
         else:
             x = random.uniform(0,1)
             if x < math.exp(-delta/temp):
-                print "Get a worst tree!"
                 tree = copy.deepcopy(newTree)
                 treeMSE = newTreeMSE
-        temp = changeTemperature(temp)
-        print "temp: ", temp
-    
-    return bestTree
+        temp = changeTemperature(temp, step)
+        print "Temp: ", temp
+        
+        # save the worst result (just for plotting)
+        if treeMSE > worstMSE:
+            worstMSE = treeMSE
+        allMSE.append(treeMSE)
+        
 
-def changeTemperature(temp):
-    step = 10
+    result = {"bestTree": bestTree, "allMSE": allMSE, "temp":temperature,
+              "step":step, "worstMSE":worstMSE, "bestTreeMSE":bestTreeMSE, 
+              "bestTreeTemp": bestTreeTemp}
+        
+    return result
+
+def plotResult(result, xlabel, ylabel, pathToSave=None):
+    plt.clf()
+    temp = result["temp"]
+    step = result["step"]
+    allMSE = result["allMSE"]
+    worstMSE = result["worstMSE"]
+    bestMSE = result['bestTreeMSE']
+    
+    tempRange = np.arange(0,temp,step)
+    plt.plot(tempRange, allMSE)
+    plt.plot([result['bestTreeTemp']], [result['bestTreeMSE']], 'ro')
+    plt.axis([temp,0, bestMSE - (0.05 * bestMSE), worstMSE + (0.05 * worstMSE)])
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    
+    if pathToSave == None:
+        plt.show()
+    else:
+        plt.savefig(pathToSave)
+
+def changeTemperature(temp, step):
     temp -= step
     return temp
         
@@ -391,35 +427,12 @@ if __name__ == "__main__":
     # get parameters of csv_file
     parameters = cars[0].keys()
     
-    paramToPredict = "Horsepower"
-#     BinaryTree.maxDepth = 5
-#     newTree = BinaryTree(cars, paramToPredict)
-#     newTree.generate()
-#     newTree.insertDataCollection(cars)
-#     newTree.computeMeanLeavesValues()
-#     print newTree.getMeanSquaredError()
-#     newTree.printTree("before.png")
-#     
-#     newTree.removeRandom()
-#     newTree.removeRandom() 
-#     newTree.insertRandom()
-#     # insert data to a tree
-#     newTree.clearAllFittingData()
-#     newTree.insertDataCollection(cars)
-#     newTree.computeMeanLeavesValues()
-#     print newTree.getMeanSquaredError()
-#     newTree.printTree("after.png")
-      
-#     print newTree.getTreeDepth(newTree.root)
-#       
-#     print "Mean squared error:"
-#     print newTree.getMeanSquaredError()
-#      
-    # generete neighbouring tree
-    bestTree = simulatedAnnealing(cars, paramToPredict)
-    print bestTree.getMeanSquaredError()
-#       
-#     # generate output graph
-#     newTree.printTree("newTree.png")
-    bestTree.printTree("bestTree.png")
+    params = ["Horsepower", "Cylinders", "Displacement", "Weight", "Acceleration", "Model"]
+    
+    maxDepth = 10
+    step = 1
+    for paramToPredict in params:
+        result = simulatedAnnealing(cars, paramToPredict, temperature=1000, maxDepth=maxDepth, step=step)
+        plotResult(result, "Temperature", paramToPredict + "Mean Squared Error",
+                   pathToSave=(paramToPredict + "_max_depth_" + str(maxDepth) + "_step_" + str(step)+".png"))
     
