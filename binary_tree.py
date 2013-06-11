@@ -7,8 +7,6 @@ import pydot
 from itertools import count
 import math
 import matplotlib.pyplot as plt
-import numpy as np
-
 
 import csv_loader
 
@@ -337,15 +335,20 @@ class BinaryTree:
 def simulatedAnnealing(csvData, paramToPredict, temperature=1000, maxDepth=6, step=1):
     # a list of all computed Mean Squared Errors
     allMSE = []
+    # a list of all temperature values
     allTemp = []
+   
+    # a list of decisions MSE, when a worse decision was chosen
+    worseDecisionMSE= []
+    # a list of decisions temperature, when a worse decision was chosen
+    worseDecisionTemp = []
     
-    chooseworse = []
-    chooseworseTemp = []
+    theWorstMSE = 0
     
-    worseMSE = 0
-    
-    deltaGT0 = 0
-    deltaEqual0 = 0
+    # best fitting tree
+    bestTree = None
+    bestMSE = None
+    bestTreeTemp = None
     
     temp = temperature 
     # set initial tree
@@ -356,14 +359,7 @@ def simulatedAnnealing(csvData, paramToPredict, temperature=1000, maxDepth=6, st
     tree.computeMeanLeavesValues()
     treeMSE = tree.getMeanSquaredError()
     
-    # set best fitting tree
-    bestTree = None
-    bestTreeMSE = None
-    bestTreeTemp = None
-    
     while temp > 0:
-
-            
         # get a neighbouring tree
         newTree = tree.generateNeighbouringTree()
         newTree.clearAllFittingData()
@@ -373,16 +369,16 @@ def simulatedAnnealing(csvData, paramToPredict, temperature=1000, maxDepth=6, st
 
         print newTreeMSE
         
-         # save the worse result (just for plotting)
-        if treeMSE > worseMSE:
-            worseMSE = treeMSE
-        if newTreeMSE > worseMSE:
-            worseMSE = newTreeMSE
+        # save the worse result (just for plotting)
+        if treeMSE > theWorstMSE:
+            theWorstMSE = treeMSE
+        if newTreeMSE > theWorstMSE:
+            theWorstMSE = newTreeMSE
         
         # check if newTree gives better result than bestTree
-        if newTreeMSE < bestTreeMSE or bestTreeMSE == None:
+        if newTreeMSE < bestMSE or bestMSE == None:
             bestTree = copy.deepcopy(newTree)
-            bestTreeMSE = newTreeMSE
+            bestMSE = newTreeMSE
             bestTreeTemp = temp
             
         delta = (newTreeMSE - treeMSE)
@@ -392,40 +388,34 @@ def simulatedAnnealing(csvData, paramToPredict, temperature=1000, maxDepth=6, st
         else:
             x = random.uniform(0,1)
             if x < math.exp(-delta/temp):
-                chooseworse.append(newTreeMSE)
-                chooseworseTemp.append(temp)
-                deltaGT0 += 1
+                worseDecisionMSE.append(newTreeMSE)
+                worseDecisionTemp.append(temp)
                 tree = copy.deepcopy(newTree)
                 treeMSE = newTreeMSE
-#         print "Delta: ", delta
         print "Temp: ", temp
         
         allMSE.append(treeMSE)
         allTemp.append(temp)
         temp = changeTemperature(temp, step)
 
-        
-    print "DeltaGT0: " , deltaGT0
-    print "DeltaEqual0: ", deltaEqual0
-        
-
-    result = {"bestTree": bestTree, "allMSE": allMSE, "allTemp":allTemp, "temp":temperature,
-              "step":step, "worseMSE":worseMSE, "bestTreeMSE":bestTreeMSE, "chooseworse":chooseworse, "chooseworseTemp":chooseworseTemp ,
-              "bestTreeTemp": bestTreeTemp}
+    result = {"bestTree": bestTree, "allMSE": allMSE, "allTemp":allTemp, 
+              "temperature":temperature, "step":step, "theWorstMSE":theWorstMSE,
+              "bestMSE":bestMSE, "worseDecisionMSE":worseDecisionMSE, 
+              "worseDecisionTemp":worseDecisionTemp, "bestTreeTemp": bestTreeTemp}
         
     return result
 
 def plotResult(result, xlabel, ylabel, pathToSave=None):
     plt.clf()
     allMSE = result["allMSE"]
-    worseMSE = result["worseMSE"]
-    bestMSE = result['bestTreeMSE']
-    chooseworseMSE = result['chooseworse']
-    chooseworseTemp = result['chooseworseTemp']
+    theWorstMSE = result["theWorstMSE"]
+    bestMSE = result['bestMSE']
+    worseDecisionChosenMSE = result['worseDecisionMSE']
+    worseDecisionChosenTemp = result['worseDecisionTemp']
     
-    print "bestTreeMSE: ", result['bestTreeMSE']
+    print "bestMSE: ", result['bestMSE']
     print "bestTreeTemp: ", result['bestTreeTemp']
-    print "worseMSE: ", worseMSE
+    print "theWorstMSE: ", theWorstMSE
     print "ALL MSE: ", allMSE
 
     tempRange = result['allTemp']
@@ -433,15 +423,17 @@ def plotResult(result, xlabel, ylabel, pathToSave=None):
     plt.plot(tempRange, allMSE, marker='.', linestyle='--' )
     
     # plot when the worse decision was chosen
-    plt.plot(chooseworseTemp, chooseworseMSE , ms=10, color='m', marker='.', linestyle='', label="Chosen worse decision")
-    plt.legend()
-    
+    plt.scatter(worseDecisionChosenTemp, worseDecisionChosenMSE, s=10, 
+                color='m', marker='s', label="Worse decision is chosen")
     
     # plot best result
-    plt.plot([result['bestTreeTemp']], [result['bestTreeMSE']], "ro" )
-    plt.axis([tempRange[0],0, bestMSE - (0.05 * bestMSE), worseMSE + (0.05 * worseMSE)])
+    plt.plot([result['bestTreeTemp']], [result['bestMSE']], "ro", 
+             label="Best solution")
+    plt.axis([tempRange[0],0, bestMSE - (0.05 * bestMSE), 
+              theWorstMSE + (0.05 * theWorstMSE)])
     plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
+    plt.ylabel(ylabel)    
+    plt.legend()
     
     if pathToSave == None:
         plt.show()
@@ -466,10 +458,10 @@ if __name__ == "__main__":
     params = ["Horsepower"]
     
     maxDepth = 5
-    step = 10
+    step = 1
     temperature = 100
     for paramToPredict in params:
         result = simulatedAnnealing(cars, paramToPredict, temperature=temperature, maxDepth=maxDepth, step=step)
         plotResult(result, "Temperature", paramToPredict + " Mean Squared Error")
-#                    pathToSave=(paramToPredict + "_max_depth_" + str(maxDepth) + "_step_" + str(step)+".png"))
+#                     pathToSave=("img/" + "temp" + str(temperature) + "/" + paramToPredict + "_max_depth_" + str(maxDepth) + ".png"))
     
