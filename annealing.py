@@ -129,17 +129,20 @@ if __name__ == "__main__":
     temperature = 100
     step = 1
     maxDepth = 20
+    graphPath = ''
     
     # i - inputfile
     # p - parameter
     # t - temperature
     # s - step size
     # d - max depth
-    myopts, args = getopt.getopt(sys.argv[1:], "i:o:p:t:s:d:")
+    myopts, args = getopt.getopt(sys.argv[1:], "i:o:p:t:s:d:g:")
     
     for option, arg in myopts:
         if option == '-i':
             ifile = arg
+        elif option == '-o':
+            ofile = arg
         elif option == '-p':
             paramToPredict = arg
         elif option == '-t':
@@ -147,9 +150,13 @@ if __name__ == "__main__":
         elif option == '-s':
             step = float(arg)
         elif option == '-d':
-            maxDepth = float(arg)
+            maxDepth = int(arg)
+        # output graph path
+        elif option == '-g':
+            graphPath = arg
+            
         else:
-            print("""Usage: %s -i inputCsv -p paramToPredict -t temperature 
+            print("""Usage: %s -i inputCsv -o output-p paramToPredict -t temperature 
                 -s step -d maxDepth""" % sys.argv[0])
             
     print ("""Input csv :  %s\nparam: %s\ntemp: %d\nstep: %f\nmaxDepth: %d""" 
@@ -178,6 +185,11 @@ if __name__ == "__main__":
         path = ofile
     plotResult(result, "Temperature", paramToPredict + " Mean Squared Error",
                          pathToSave=path)
+    
+    # save output graph
+    if len(graphPath) != 0:
+        bestTree = result['bestTree']
+        bestTree.printTree(graphPath)
     
     print "Image written in: ", path
             
