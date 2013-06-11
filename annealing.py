@@ -8,6 +8,9 @@ import copy
 import math
 import matplotlib.pyplot as plt
 import random
+import os
+import sys
+import getopt
 
 def simulatedAnnealing(csvData, paramToPredict, temperature=1000, maxDepth=20, 
                        step=1):
@@ -119,33 +122,90 @@ def changeTemperature(temp, step):
     return temp
         
 if __name__ == "__main__":
-
-    print "binary tree"
+    
+    ifile = ''
+    ofile = ''
+    paramToPredict = ''
+    temperature = 100
+    step = 1
+    maxDepth = 20
+    
+    # i - inputfile
+    # p - parameter
+    # t - temperature
+    # s - step size
+    # d - max depth
+    myopts, args = getopt.getopt(sys.argv[1:], "i:o:p:t:s:d:")
+    
+    for option, arg in myopts:
+        if option == '-i':
+            ifile = arg
+        elif option == '-p':
+            paramToPredict = arg
+        elif option == '-t':
+            temperature = int(arg)
+        elif option == '-s':
+            step = float(arg)
+        elif option == '-d':
+            maxDepth = float(arg)
+        else:
+            print("""Usage: %s -i inputCsv -p paramToPredict -t temperature 
+                -s step -d maxDepth""" % sys.argv[0])
+            
+    print ("""Input csv :  %s\nparam: %s\ntemp: %d\nstep: %f\nmaxDepth: %d""" 
+           % (ifile, paramToPredict, temperature, step, maxDepth))
     
     # load csv_file
-    cars = csvloader.loadCars("cars.csv")
-     
-    # get parameters of csv_file
-    parameters = cars[0].keys()
-    
-#     params = ["Horsepower", "Cylinders", "Displacement", "Weight", "Acceleration", "Model"]
-    params = ["Horsepower"]
-    
-    maxDepth = 5
-    step = 1
-    temperature = 100
-    for paramToPredict in params:
-        result = simulatedAnnealing(cars, paramToPredict, temperature=temperature, 
+    csvData = csvloader.loadCars(ifile)
+
+    result = simulatedAnnealing(csvData, paramToPredict, temperature=temperature, 
                                     maxDepth=maxDepth, step=step)
-        print "Result for: ", paramToPredict    
-        print "Solution (best MSE): ", result['bestMSE']
-        print "found, when temperature was: ", result['bestTreeTemp']
-        
-    path = ("img/" + "temp" + str(temperature) + "/" + paramToPredict + 
-        "_max_depth_" + str(maxDepth) + ".png")
     
+    print "Result for: ", paramToPredict, " and csv: ", ifile
+    print "Solution (best MSE): ", result['bestMSE']
+    print "found, when temperature was: ", result['bestTreeTemp']
+         
+    if len(ofile) == 0:
+        # if the directory does not exist, create it
+        directory = "img/" + "temp" + str(temperature) + "/"
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+            
+        path = (directory + paramToPredict + 
+            "_max_depth_" + str(maxDepth) + ".png")
+         
+    else:
+        path = ofile
     plotResult(result, "Temperature", paramToPredict + " Mean Squared Error",
-                     pathToSave=path)
+                         pathToSave=path)
+    
+    print "Image written in: ", path
+            
+
+#     # load csv_file
+#     cars = csvloader.loadCars("cars.csv")
+#      
+#     # get parameters of csv_file
+#     parameters = cars[0].keys()
+#     
+# #     params = ["Horsepower", "Cylinders", "Displacement", "Weight", "Acceleration", "Model"]
+#     params = ["Horsepower"]
+#     
+#     maxDepth = 5
+#     step = 1
+#     temperature = 100
+#     for paramToPredict in params:
+#         result = simulatedAnnealing(cars, paramToPredict, temperature=temperature, 
+#                                     maxDepth=maxDepth, step=step)
+#         print "Result for: ", paramToPredict    
+#         print "Solution (best MSE): ", result['bestMSE']
+#         print "found, when temperature was: ", result['bestTreeTemp']
+#         
+#     path = ("img/" + "temp" + str(temperature) + "/" + paramToPredict + 
+#         "_max_depth_" + str(maxDepth) + ".png")
+#     
+#     plotResult(result, "Temperature", paramToPredict + " Mean Squared Error",
+#                      pathToSave=path)
 
 
 
