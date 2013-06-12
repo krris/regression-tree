@@ -7,6 +7,7 @@ import csvloader
 import copy
 import math
 import matplotlib.pyplot as plt
+from matplotlib.font_manager import FontProperties
 import random
 import os
 import sys
@@ -95,7 +96,7 @@ def plotResult(result, xlabel, ylabel, pathToSave=None):
     plt.clf()
     
     # plot every result
-    plt.plot(tempRange, allMSE, marker='.', linestyle='--' )
+    plt.plot(tempRange, allMSE)
     
     # plot when the worse decision was chosen
     plt.scatter(worseDecisionChosenTemp, worseDecisionChosenMSE, s=10, 
@@ -109,8 +110,12 @@ def plotResult(result, xlabel, ylabel, pathToSave=None):
     plt.axis([tempRange[0],0, bestMSE - (0.05 * bestMSE), 
               theWorstMSE + (0.05 * theWorstMSE)])
     plt.xlabel(xlabel)
-    plt.ylabel(ylabel)    
-    plt.legend()
+    plt.ylabel(ylabel)   
+
+    fontP = FontProperties()
+    fontP.set_size('small')
+    plt.legend(prop = fontP, loc='upper center', bbox_to_anchor=(0.5, 1.05),
+          ncol=3, fancybox=True, shadow=True)
     
     if pathToSave == None:
         plt.show()
@@ -198,4 +203,6 @@ if __name__ == "__main__":
         bestTree = result['bestTree']
         bestTree.printTree(graphPath)            
         print "Graph written in: ", graphPath
+
+
 

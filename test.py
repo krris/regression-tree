@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*- 
 import os
 
-temperatures = ['10', '100', '1000', '10000']
-maxDepths = ['5', '10', '20', '30']
+temperatures = ['50', '100', '500',]
+maxDepths = ['10', '20', '30']
 
 # test cars
 print "Start testing cars..."
