@@ -125,6 +125,21 @@ def plotResult(result, xlabel, ylabel, pathToSave=None):
 def changeTemperature(temp, step):
     temp -= step
     return temp
+
+def usage():
+    print("""Usage: %s -i input.csv -o output.png -p paramToPredict 
+        [-t arg] [-s arg ] [-d arg] [-g treeGraph.png]""" % sys.argv[0])
+    print ""
+    print "-i: input CSV file"
+    print "-o: output graph"
+    print "-p: parameter to predict"
+    print "-t: temperature value (default: 100)"
+    print "-s: one step size (default: 1)" 
+    print "-d: max tree depth (default: 20)" 
+    print "-g: generate tree graph"
+    
+    print "\nExample:"
+    print "$ python annealing.py -i cars.csv -p Weight -t 5 -s 0.01 -d 10 -o plotting.png -g treegraph.png"
         
 if __name__ == "__main__":
     
@@ -145,6 +160,11 @@ if __name__ == "__main__":
     # g - output tree graph
     myopts, args = getopt.getopt(sys.argv[1:], "i:o:p:t:s:d:g:")
     
+    minArg = 7
+    if len(sys.argv) < minArg:
+        usage()
+        sys.exit(0)
+         
     for option, arg in myopts:
         if option == '-i':
             ifile = arg
@@ -161,12 +181,11 @@ if __name__ == "__main__":
         elif option == '-g':
             treeGraphPath = arg   
         else:
-            print("""Usage: %s -i input.csv -o output.png -p paramToPredict -t temperature 
-                -s step -d maxDepth -g treeGraph.png""" % sys.argv[0])
-            
+            usage()
+                         
     print ("""Input csv :  %s\nparam: %s\ntemp: %d\nstep: %f\nmaxDepth: %d""" 
            % (ifile, paramToPredict, temperature, step, maxDepth))
-    
+     
     # load csv_file (camera.csv or cars.csv only)
     if ifile == "cars.csv":
         csvData = csvloader.loadCars(ifile)
@@ -174,29 +193,29 @@ if __name__ == "__main__":
     else:
         csvData = csvloader.loadCameras(ifile)
         csvDir = "cameras/"
-
+ 
     result = simulatedAnnealing(csvData, paramToPredict, temperature=temperature, 
                                     maxDepth=maxDepth, step=step)
-    
+     
     print "Result for: ", paramToPredict, " and csv: ", ifile
     print "Solution (best MSE): ", result['bestMSE']
     print "found, when temperature was: ", result['bestTreeTemp']
-         
+          
     if len(ofile) == 0:
         # if the directory does not exist, create it
         directory = "img/" + csvDir + "temp" + str(temperature) + "/"
         if not os.path.exists(directory):
             os.makedirs(directory)
-            
+             
         path = (directory + paramToPredict + 
             "_max_depth_" + str(maxDepth) + ".png")
-         
+          
     else:
         path = ofile
     plotResult(result, "Temperature", paramToPredict + " Mean Squared Error",
                          pathToSave=path)
     print "Function plotting saved in: ", path
-    
+     
     # save output graph
     if len(treeGraphPath) != 0:
         bestTree = result['bestTree']
