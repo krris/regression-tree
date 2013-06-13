@@ -49,7 +49,7 @@ def simulatedAnnealing(csvData, paramToPredict, temperature=1000, maxDepth=20,
         newTree.computeMeanLeavesValues()
         newTreeMSE = newTree.getMeanSquaredError()
 
-        # save the worse result (just for plotting)
+        # save the worst result (just for plotting)
         if treeMSE > theWorstMSE:
             theWorstMSE = treeMSE
         if newTreeMSE > theWorstMSE:
@@ -134,13 +134,15 @@ if __name__ == "__main__":
     temperature = 100
     step = 1
     maxDepth = 20
-    graphPath = ''
+    treeGraphPath = ''
     
     # i - inputfile
+    # o - output plotting
     # p - parameter
     # t - temperature
     # s - step size
     # d - max depth
+    # g - output tree graph
     myopts, args = getopt.getopt(sys.argv[1:], "i:o:p:t:s:d:g:")
     
     for option, arg in myopts:
@@ -156,18 +158,15 @@ if __name__ == "__main__":
             step = float(arg)
         elif option == '-d':
             maxDepth = int(arg)
-        # output graph path
         elif option == '-g':
-            graphPath = arg
-            
+            treeGraphPath = arg   
         else:
-            print("""Usage: %s -i inputCsv -o output-p paramToPredict -t temperature 
-                -s step -d maxDepth""" % sys.argv[0])
+            print("""Usage: %s -i input.csv -o output.png -p paramToPredict -t temperature 
+                -s step -d maxDepth -g treeGraph.png""" % sys.argv[0])
             
     print ("""Input csv :  %s\nparam: %s\ntemp: %d\nstep: %f\nmaxDepth: %d""" 
            % (ifile, paramToPredict, temperature, step, maxDepth))
     
-    # TODO
     # load csv_file (camera.csv or cars.csv only)
     if ifile == "cars.csv":
         csvData = csvloader.loadCars(ifile)
@@ -196,13 +195,13 @@ if __name__ == "__main__":
         path = ofile
     plotResult(result, "Temperature", paramToPredict + " Mean Squared Error",
                          pathToSave=path)
-    print "Function plotting written in: ", path
+    print "Function plotting saved in: ", path
     
     # save output graph
-    if len(graphPath) != 0:
+    if len(treeGraphPath) != 0:
         bestTree = result['bestTree']
-        bestTree.printTree(graphPath)            
-        print "Graph written in: ", graphPath
+        bestTree.printTree(treeGraphPath)            
+        print "Graph saved in: ", treeGraphPath
 
 
 

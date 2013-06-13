@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*- 
 import os
 
-temperatures = ['50', '100', '500',]
+temperatures = ['50', '100', '500']
 maxDepths = ['10', '20', '30']
 
 # test cars
